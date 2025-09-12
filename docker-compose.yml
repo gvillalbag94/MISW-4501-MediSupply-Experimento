@@ -1,0 +1,51 @@
+services:
+  gateway:
+    build: gateway
+    ports:
+      - "5001:5001"
+    environment:
+      - ENV=development
+      - DEBUG=true
+      - HOST=0.0.0.0
+      - PORT=5001
+      - LOG_LEVEL=INFO
+      - JWT_SECRET=your-secret-key-here
+      - ALGORITHM=HS256
+      - PRODUCTOS_SERVICE_URL=http://productos:5002
+      - PROVEDORES_SERVICE_URL=http://provedores:5003
+    networks:
+      - app_net
+      - internal_net
+
+  productos:
+    build: productos
+    ports:
+      - "5002:5002"
+    environment:
+      - ENV=development
+      - DEBUG=true
+      - HOST=0.0.0.0
+      - PORT=5002
+      - LOG_LEVEL=INFO
+    networks:
+      - internal_net
+
+  provedores:
+    build: provedores
+    ports:
+      - "5003:5003"
+    environment:
+      - ENV=development
+      - DEBUG=true
+      - HOST=0.0.0.0
+      - PORT=5003
+      - LOG_LEVEL=INFO
+    networks:
+      - internal_net
+
+networks:
+  app_net:
+    driver: bridge
+  internal_net:
+    driver: bridge
+    internal: true 
