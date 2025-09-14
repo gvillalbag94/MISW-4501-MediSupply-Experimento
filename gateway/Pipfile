@@ -11,6 +11,7 @@ requests = "*"
 flask-cors = "*"
 gunicorn = "*"
 pyjwt = "*"
+pulsar-client = "*"
 
 [dev-packages]
 

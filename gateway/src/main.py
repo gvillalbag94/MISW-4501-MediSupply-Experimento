@@ -1,6 +1,7 @@
 import logging
 from config import Config
 from flask import Flask
+from infrastructure.pulsar import pulsar_client, event_service
 
 def setup_logging(app: Flask):
     """Configura el sistema de logging."""
@@ -42,6 +43,26 @@ def create_application():
         app = flask_config.create_app()
         setup_logging(app)
         logger = logging.getLogger(__name__)
+        
+        # Inicializar conexión con Pulsar
+        try:
+            pulsar_client.connect()
+            logger.info("Pulsar client connected successfully")
+        except Exception as e:
+            logger.error(f"Failed to connect to Pulsar: {e}")
+            # No lanzar excepción para permitir que el gateway funcione sin eventos
+        
+        # Configurar limpieza solo al cerrar la aplicación, no en cada request
+        import atexit
+        def cleanup_pulsar():
+            try:
+                event_service.cleanup()
+                pulsar_client.disconnect()
+                logger.info("Pulsar cleanup completed")
+            except Exception as e:
+                logger.error(f"Error cleaning up Pulsar: {e}")
+        
+        atexit.register(cleanup_pulsar)
         
         # Inicializar la aplicación
         logger.info("API Gateway initialized successfully")

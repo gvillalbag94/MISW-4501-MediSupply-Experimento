@@ -9,6 +9,7 @@ from src.aplicacion.servicios.provedor_service import ProvedorService
 from src.infraestructura.repositorios.provedor_repository import ProvedorRepositoryImpl
 from src.aplicacion.use_cases.provedor_use_case import ProvedorUseCase
 from src.infraestructura.rutas.provedor_routes import create_provedor_routes
+from src.infraestructura.pulsar.event_consumer import EventConsumer
 
 load_dotenv(".env")
 
@@ -21,6 +22,7 @@ class Config:
     
     def __init__(self):
         self.app = None
+        self.event_consumer = None
     
     def create_app(self) -> Flask:
         """
@@ -39,6 +41,9 @@ class Config:
         
         # Inyección de dependencias
         self._setup_dependencies()
+        
+        # Configurar consumidor de eventos
+        self._setup_event_consumer()
         
         # Registrar rutas
         self._register_routes()
@@ -89,6 +94,23 @@ class Config:
         provedor_use_case = ProvedorUseCase(provedor_service)
         # Capa de Presentación (Controladores)
         self.provedor_controller = ProvedorCmd(provedor_use_case)
+    
+    def _setup_event_consumer(self):
+        """Configura el consumidor de eventos de Pulsar."""
+        try:
+            self.event_consumer = EventConsumer(self.provedor_controller, self.app)
+            self.event_consumer.start_consuming()
+            
+            # Configurar limpieza al cerrar la aplicación
+            @self.app.teardown_appcontext
+            def cleanup_event_consumer(error):
+                if self.event_consumer:
+                    self.event_consumer.stop_consuming()
+                    
+        except Exception as e:
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error configurando consumidor de eventos: {e}")
+            # No lanzar excepción para permitir que el servicio funcione sin eventos
     
     def _register_routes(self):
         """Registra todas las rutas de la aplicación."""

@@ -1,4 +1,24 @@
 services:
+  # Apache Pulsar
+  pulsar:
+    image: apachepulsar/pulsar:3.1.0
+    container_name: pulsar
+    command: bin/pulsar standalone
+    ports:
+      - "6650:6650" # Pulsar broker port
+      - "8080:8080" # Pulsar admin port
+    environment:
+      - PULSAR_MEM=-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m
+    volumes:
+      - pulsar_data:/pulsar/data
+    networks:
+      - internal_net
+    healthcheck:
+      test: [ "CMD", "bin/pulsar-admin", "brokers", "healthcheck" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   gateway:
     build: gateway
     ports:
@@ -13,9 +33,13 @@ services:
       - ALGORITHM=HS256
       - PRODUCTOS_SERVICE_URL=http://productos:5002
       - PROVEDORES_SERVICE_URL=http://provedores:5003
+      - PULSAR_SERVICE_URL=pulsar://pulsar:6650
     networks:
       - app_net
       - internal_net
+    depends_on:
+      - pulsar
+      - pulsar-init
 
   productos:
     build: productos
@@ -27,8 +51,13 @@ services:
       - HOST=0.0.0.0
       - PORT=5002
       - LOG_LEVEL=INFO
+      - PULSAR_SERVICE_URL=pulsar://pulsar:6650
     networks:
+      - app_net
       - internal_net
+    depends_on:
+      - pulsar
+      - pulsar-init
 
   provedores:
     build: provedores
@@ -40,12 +69,64 @@ services:
       - HOST=0.0.0.0
       - PORT=5003
       - LOG_LEVEL=INFO
+      - PULSAR_SERVICE_URL=pulsar://pulsar:6650
+    networks:
+      - app_net
+      - internal_net
+    depends_on:
+      - pulsar
+      - pulsar-init
+
+  # Inicialización automática de tópicos Pulsar
+  pulsar-init:
+    image: apachepulsar/pulsar:3.1.0
+    container_name: pulsar-init
     networks:
       - internal_net
+    depends_on:
+      pulsar:
+        condition: service_healthy
+    environment:
+      - PULSAR_ADMIN_URL=http://pulsar:8080
+    command: >
+      sh -c "
+        echo '🔧 Inicializando tópicos de Pulsar automáticamente...'
+        
+        # Esperar a que Pulsar esté completamente listo
+        echo '⏳ Verificando que Pulsar esté listo...'
+        for i in {1..30}; do
+          if bin/pulsar-admin --admin-url http://pulsar:8080 brokers healthcheck; then
+            echo 'Pulsar está listo!'
+            break
+          fi
+          echo \"Intento \$i/30: Esperando a Pulsar...\"
+          sleep 5
+        done
+        
+        echo '📝 Creando tópicos necesarios...'
+        
+        # Crear tópicos para productos
+        bin/pulsar-admin --admin-url http://pulsar:8080 topics create productos-queries || echo 'Tópico productos-queries ya existe'
+        bin/pulsar-admin --admin-url http://pulsar:8080 topics create productos-responses || echo 'Tópico productos-responses ya existe'
+        
+        # Crear tópicos para proveedores  
+        bin/pulsar-admin --admin-url http://pulsar:8080 topics create provedores-queries || echo 'Tópico provedores-queries ya existe'
+        bin/pulsar-admin --admin-url http://pulsar:8080 topics create provedores-responses || echo 'Tópico provedores-responses ya existe'
+        
+        echo '📋 Verificando tópicos creados:'
+        bin/pulsar-admin --admin-url http://pulsar:8080 topics list public/default
+        
+        echo '✅ Inicialización de tópicos completada'
+      "
+    restart: "no"
+
+volumes:
+  pulsar_data:
+    driver: local
 
 networks:
   app_net:
     driver: bridge
   internal_net:
     driver: bridge
-    internal: true 
+    internal: true
