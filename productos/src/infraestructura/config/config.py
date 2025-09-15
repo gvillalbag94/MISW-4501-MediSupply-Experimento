@@ -10,6 +10,9 @@ from src.infraestructura.repositorios.producto_repository import ProductoReposit
 from src.aplicacion.use_cases.producto_use_case import ProductoUseCase
 from src.infraestructura.rutas.producto_routes import create_producto_routes
 
+# Módulo de autorización
+from src.modules.autorizador import create_authorization_module, create_authorization_middleware
+
 load_dotenv(".env")
 
 
@@ -52,6 +55,10 @@ class Config:
         self.app.config["HOST"] = os.getenv("HOST", "0.0.0.0")
         self.app.config["PORT"] = int(os.getenv("PORT", 5001))
         self.app.config["LOG_LEVEL"] = os.getenv("LOG_LEVEL", "INFO")
+        
+        # Configuración JWT para autorización
+        self.app.config["JWT_SECRET"] = os.getenv("JWT_SECRET", "your-secret-key-here")
+        self.app.config["ALGORITHM"] = os.getenv("ALGORITHM", "HS256")
     
     def _configure_request_logging(self):
         """Configura el middleware para logging de requests y responses."""
@@ -89,19 +96,61 @@ class Config:
         producto_use_case = ProductoUseCase(producto_service)
         # Capa de Presentación (Controladores)
         self.producto_controller = ProductoCmd(producto_use_case)
+        
+        # Configuración del módulo de autorización
+        self.authorization_service = create_authorization_module(
+            self.app.config.get("JWT_SECRET"),
+            self.app.config.get("ALGORITHM")
+        )
     
     def _register_routes(self):
         """Registra todas las rutas de la aplicación."""
+        # Activar middleware de autorización para seguridad del microservicio
+        create_authorization_middleware(
+            self.app,
+            self.app.config.get("JWT_SECRET"),
+            self.app.config.get("ALGORITHM")
+        )
+        
         # Registrar rutas de productos
         producto_routes = create_producto_routes(self.producto_controller)
         self.app.register_blueprint(producto_routes)
+        
+        # Registrar rutas de autorización (para que el Gateway pueda usar)
+        from src.modules.autorizador.infraestructura.rutas.auth_routes import create_auth_routes
+        from src.modules.autorizador.infraestructura.cmd.auth_cmd import AuthCmd
+        from src.modules.autorizador.aplicacion.servicios.auth_service import AuthService
+        
+        # Crear servicio y controlador de autorización
+        auth_service = AuthService(
+            self.app.config.get("JWT_SECRET"),
+            self.app.config.get("ALGORITHM")
+        )
+        auth_controller = AuthCmd(auth_service)
+        auth_routes = create_auth_routes(auth_controller)
+        self.app.register_blueprint(auth_routes)
         
         # Ruta raíz simple
         @self.app.route("/")
         def root():
             return {
                 "message": "Microservicio de Productos is running",
-                "version": "1.0.0",
+                "version": "2.0.0",
+                "auth_middleware": True,
+                "auth_service": True,
+                "security": "Defense in depth - microservice validates tokens + internal request detection",
+                "auth_endpoints": {
+                    "validate": "/auth/validate",
+                    "authorize": "/auth/authorize", 
+                    "user_info": "/auth/user-info",
+                    "resources": "/auth/resources"
+                },
+                "permissions": {
+                    "ADMIN": "Full access to products",
+                    "USER": "Full access to products", 
+                    "MANAGER": "Full access to products",
+                    "VIEWER": "Read-only access to products"
+                }
             }
         
         # Ruta de health check
@@ -110,7 +159,8 @@ class Config:
             return {
                 "status": "healthy",
                 "service": "productos",
-                "version": "1.0.0"
+                "version": "2.0.0",
+                "auth_enabled": True
             }
     
     def get_app(self) -> Flask:

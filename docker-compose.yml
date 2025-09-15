@@ -27,6 +27,8 @@ services:
       - HOST=0.0.0.0
       - PORT=5002
       - LOG_LEVEL=INFO
+      - JWT_SECRET=your-secret-key-here
+      - ALGORITHM=HS256
     networks:
       - internal_net
 
@@ -40,6 +42,8 @@ services:
       - HOST=0.0.0.0
       - PORT=5003
       - LOG_LEVEL=INFO
+      - JWT_SECRET=your-secret-key-here
+      - ALGORITHM=HS256
     networks:
       - internal_net
 
@@ -48,4 +52,4 @@ networks:
     driver: bridge
   internal_net:
     driver: bridge
-    internal: true 
+    internal: true
