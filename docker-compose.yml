@@ -8,16 +8,18 @@ services:
       - "6650:6650" # Pulsar broker port
       - "8080:8080" # Pulsar admin port
     environment:
-      - PULSAR_MEM=-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m
+      - PULSAR_MEM=-Xms1g -Xmx1g -XX:MaxDirectMemorySize=512m
+      - PULSAR_STANDALONE_USE_ZOOKEEPER=1
     volumes:
       - pulsar_data:/pulsar/data
     networks:
       - internal_net
     healthcheck:
       test: [ "CMD", "bin/pulsar-admin", "brokers", "healthcheck" ]
-      interval: 30s
+      interval: 15s
       timeout: 10s
-      retries: 5
+      retries: 10
+      start_period: 60s
 
   gateway:
     build: gateway

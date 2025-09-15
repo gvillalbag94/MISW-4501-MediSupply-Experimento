@@ -102,10 +102,8 @@ class Config:
             self.event_consumer.start_consuming()
             
             # Configurar limpieza al cerrar la aplicación
-            @self.app.teardown_appcontext
-            def cleanup_event_consumer(error):
-                if self.event_consumer:
-                    self.event_consumer.stop_consuming()
+            import atexit
+            atexit.register(self._cleanup_on_exit)
                     
         except Exception as e:
             logger = logging.getLogger(__name__)
@@ -134,6 +132,15 @@ class Config:
                 "service": "provedores",
                 "version": "1.0.0"
             }
+    
+    def _cleanup_on_exit(self):
+        """Limpia recursos al cerrar la aplicación."""
+        if self.event_consumer:
+            try:
+                self.event_consumer.stop_consuming()
+            except Exception as e:
+                logger = logging.getLogger(__name__)
+                logger.error(f"Error limpiando consumidor: {e}")
     
     def get_app(self) -> Flask:
         """

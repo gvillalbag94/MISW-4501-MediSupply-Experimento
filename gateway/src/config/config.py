@@ -5,18 +5,25 @@ from dotenv import load_dotenv
 import os
 from flask import Flask, g, request
 
-from modules.provedores.infraestructura.rutas.provedores_routes import create_provedores_routes
 from modules.health.infraestructura.cmd import HealthCmd
 from modules.health.aplicacion.servicios import HealthService
 from modules.health.infraestructura.repositorios import HealthRepositoryImpl
 from modules.health.infraestructura.rutas.health_routes import create_health_routes
 from modules.health.aplicacion.use_cases.health_use_case import HealthUseCase
-from modules.autenticador.aplicacion.servicios.auth_service import AuthService
-from modules.autenticador.aplicacion.use_cases.auth_use_case import AuthUseCase
-from modules.autenticador.infraestructura.cmd.auth_cmd import AuthCmd
-from modules.autenticador.infraestructura.repositorios.auth_repository import AuthRepositoryImpl
-from modules.autenticador.infraestructura.rutas.auth_routes import create_auth_routes
+
+# Importar el módulo de autorización simplificado
+from modules.autorizador import create_authorization_module, create_authorization_middleware
+
+# Importar rutas originales (sin modificar)
 from modules.productos.infraestructura.rutas.producto_routes import create_producto_routes
+from modules.provedores.infraestructura.rutas.provedores_routes import create_provedores_routes
+
+# Importar módulo autenticador original para login
+from modules.autenticador.aplicacion.servicios.auth_service import AuthService as OriginalAuthService
+from modules.autenticador.aplicacion.use_cases.auth_use_case import AuthUseCase as OriginalAuthUseCase
+from modules.autenticador.infraestructura.cmd.auth_cmd import AuthCmd as OriginalAuthCmd
+from modules.autenticador.infraestructura.repositorios.auth_repository import AuthRepositoryImpl as OriginalAuthRepository
+from modules.autenticador.infraestructura.rutas.auth_routes import create_auth_routes as create_original_auth_routes
 
 
 load_dotenv('.env')
@@ -117,41 +124,83 @@ class Config:
     
     def _setup_dependencies(self):
         """Configura la inyección de dependencias siguiendo arquitectura hexagonal."""
-        # Capa de Infraestructura
+        # Capa de Infraestructura - Health
         health_repository = HealthRepositoryImpl()
-        # Capa de Dominio
+        # Capa de Dominio - Health
         health_service = HealthService(health_repository)
-        # Capa de Aplicación
+        # Capa de Aplicación - Health
         health_check_use_case = HealthUseCase(health_service)
-        # Capa de Presentación (Controladores)
+        # Capa de Presentación (Controladores) - Health
         self.health_controller = HealthCmd(health_check_use_case)
 
-        auth_repository = AuthRepositoryImpl(self.app.config.get('JWT_SECRET'), self.app.config.get('ALGORITHM'))
-        auth_service = AuthService(auth_repository, self.app.config.get('JWT_SECRET'), self.app.config.get('ALGORITHM'))
-        auth_use_case = AuthUseCase(auth_service)
-        self.auth_controller = AuthCmd(auth_use_case)
+        # Módulo de autorización simplificado (solo validación)
+        self.authorization_service = create_authorization_module(
+            self.app.config.get('JWT_SECRET'),
+            self.app.config.get('ALGORITHM')
+        )
+        
+        # Módulo autenticador original (para login)
+        original_auth_repository = OriginalAuthRepository(
+            self.app.config.get('JWT_SECRET'), 
+            self.app.config.get('ALGORITHM')
+        )
+        original_auth_service = OriginalAuthService(
+            original_auth_repository,
+            self.app.config.get('JWT_SECRET'),
+            self.app.config.get('ALGORITHM')
+        )
+        original_auth_use_case = OriginalAuthUseCase(original_auth_service)
+        self.original_auth_controller = OriginalAuthCmd(original_auth_use_case)
     
     def _register_routes(self):
         """Registra todas las rutas de la aplicación."""
-        # Registrar rutas de health
+        
+        # ✅ ACTIVAR MIDDLEWARE DE AUTORIZACIÓN SIMPLIFICADO
+        # Este middleware interceptará automáticamente todas las solicitudes
+        # Funcionalidades: 1) Validar tokens, 2) Validar acceso por rol
+        create_authorization_middleware(
+            self.app, 
+            self.app.config.get('JWT_SECRET'),
+            self.app.config.get('ALGORITHM')
+        )
+        
+        # Registrar rutas de health (públicas)
         health_routes = create_health_routes(self.health_controller)
         self.app.register_blueprint(health_routes)
 
-        auth_routes = create_auth_routes(self.auth_controller)
-        self.app.register_blueprint(auth_routes)
+        # Registrar rutas del autenticador original (para login)
+        original_auth_routes = create_original_auth_routes(self.original_auth_controller)
+        self.app.register_blueprint(original_auth_routes)
 
+        # ✅ USAR RUTAS ORIGINALES (SIN MODIFICAR)
+        # El middleware se encargará automáticamente de la autorización
         productos_routes = create_producto_routes()
         self.app.register_blueprint(productos_routes)
 
         provedores_routes = create_provedores_routes()
         self.app.register_blueprint(provedores_routes)
 
-        # Ruta raíz simple
+        # Ruta raíz simple (pública)
         @self.app.route('/')
         def root():
             return {
-                "message": "API Gateway is running",
-                "version": "1.0.0",
+            "message": "API Gateway is running",
+            "version": "2.0.0",
+            "auth_enabled": True,
+            "middleware": "Simplified authorization middleware active",
+            "features": [
+                "1. Token validation (JWT)",
+                "2. Role-based access control"
+            ],
+                "protected_endpoints": [
+                    "/productos/*",
+                    "/provedores/*"
+                ],
+                "public_endpoints": [
+                    "/",
+                    "/health",
+                    "/auth/*"
+                ]
             }
     
     def get_app(self) -> Flask:
