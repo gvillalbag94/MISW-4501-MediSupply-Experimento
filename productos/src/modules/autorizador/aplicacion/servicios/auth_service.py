@@ -21,26 +21,38 @@ class AuthService:
     def validate_token(self, authorization_header: Optional[str]) -> bool:
         """
         Valida un token de autenticación desde el header Authorization.
+        Verifica que el token no haya sido alterado y que sea válido.
         
         Args:
             authorization_header: Header 'Authorization: Bearer <token>'
             
         Returns:
-            bool: True si el token es válido
+            bool: True si el token es válido y no ha sido alterado
         """
         try:
+            # Validaciones básicas
+            if not authorization_header:
+                return False
+            
             # Extraer token del header
             token = self.token_validator.extract_token_from_header(authorization_header)
             
             if not token:
                 return False
             
-            # Validar token
+            # Validar token (incluye verificación de firma para detectar alteraciones)
             self.token_validator.validate_token(token)
             return True
             
         except (InvalidTokenError, ExpiredTokenError, MissingTokenError) as e:
-            print(f"Token validation failed: {str(e)}")
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Token validation failed: {type(e).__name__}")
+            return False
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Unexpected error in token validation: {str(e)}")
             return False
     
     def get_token_payload(self, authorization_header: Optional[str]) -> Optional[TokenPayload]:
@@ -52,9 +64,12 @@ class AuthService:
             
         Returns:
             TokenPayload si es válido, None si no
+            
+        Raises:
+            InvalidTokenError: Si el header está malformado (para distinguir de None)
         """
         try:
-            # Extraer token del header
+            # Extraer token del header (puede lanzar InvalidTokenError si está malformado)
             token = self.token_validator.extract_token_from_header(authorization_header)
             
             if not token:
@@ -63,12 +78,16 @@ class AuthService:
             # Validar y obtener payload
             return self.token_validator.validate_token(token)
             
-        except (InvalidTokenError, ExpiredTokenError, MissingTokenError):
+        except InvalidTokenError:
+            # Re-lanzar errores de token malformado para manejo específico
+            raise
+        except (ExpiredTokenError, MissingTokenError):
             return None
     
     def authorize_access(self, authorization_header: Optional[str], route: str, method: str, request=None) -> bool:
         """
         Autoriza acceso a una ruta específica.
+        Valida el token y verifica permisos de acceso.
         
         Args:
             authorization_header: Header 'Authorization: Bearer <token>'
@@ -90,7 +109,8 @@ class AuthService:
                 # Esto permite que el Gateway acceda sin token cuando valida internamente
                 return True
             
-            # Obtener payload del token
+            # Obtener payload del token (incluye validación completa)
+            # Esto puede lanzar InvalidTokenError si el header está malformado
             token_payload = self.get_token_payload(authorization_header)
             
             if not token_payload:
@@ -100,7 +120,21 @@ class AuthService:
             self.access_validator.validate_access(token_payload, route, method)
             return True
             
-        except (InsufficientPermissionsError, Exception):
+        except InvalidTokenError as e:
+            # Token malformado - loggear y denegar acceso
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Malformed token for {method} {route}: {str(e)}")
+            return False
+        except InsufficientPermissionsError as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Access denied for {method} {route}: {str(e)}")
+            return False
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Unexpected error in access authorization for {method} {route}: {str(e)}")
             return False
     
     def get_user_info(self, authorization_header: Optional[str]) -> Optional[dict]:

@@ -33,6 +33,7 @@ class AuthorizationService:
     def validate_token(self, authorization_header: Optional[str]) -> TokenPayload:
         """
         Valida un token desde el header Authorization.
+        Verifica que el token no haya sido alterado y que sea válido.
         
         Args:
             authorization_header: Header 'Authorization: Bearer <token>'
@@ -42,16 +43,19 @@ class AuthorizationService:
             
         Raises:
             MissingTokenError: Si no se proporciona token
-            InvalidTokenError: Si el token es inválido
+            InvalidTokenError: Si el token es inválido o ha sido alterado
             ExpiredTokenError: Si el token ha expirado
         """
+        if not authorization_header:
+            raise MissingTokenError("Header Authorization requerido")
+        
         # Extraer token del header
         token = self.token_validator.extract_token_from_header(authorization_header)
         
         if not token:
-            raise MissingTokenError("Token de autorización requerido")
+            raise MissingTokenError("Token de autorización requerido en formato 'Bearer <token>'")
         
-        # Validar token
+        # Validar token (incluye verificación de firma y integridad)
         return self.token_validator.validate_token(token)
     
     def validate_access(self, token_payload: TokenPayload, route: str, method: str) -> bool:
@@ -76,7 +80,7 @@ class AuthorizationService:
         Autoriza una request completa (token + acceso).
         
         Este método combina ambas funcionalidades principales:
-        1. Validación de token
+        1. Validación de token (incluye verificación de integridad)
         2. Validación de acceso por rol
         
         Args:
@@ -94,7 +98,7 @@ class AuthorizationService:
             if self.access_validator._is_public_route(route):
                 return True, None
             
-            # 1. Validar token (solo si no es ruta pública)
+            # 1. Validar token (incluye verificación de firma para prevenir alteración)
             token_payload = self.validate_token(authorization_header)
             
             # 2. Validar acceso por rol
@@ -102,7 +106,17 @@ class AuthorizationService:
             
             return True, token_payload
             
-        except (MissingTokenError, InvalidTokenError, ExpiredTokenError, InsufficientPermissionsError):
+        except (MissingTokenError, InvalidTokenError, ExpiredTokenError, InsufficientPermissionsError) as e:
+            # Log del error para debugging (sin exponer detalles sensibles)
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Autorización denegada para {method} {route}: {type(e).__name__}")
+            return False, None
+        except Exception as e:
+            # Log de errores inesperados
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error inesperado en autorización para {method} {route}: {str(e)}")
             return False, None
     
     def is_public_route(self, route: str) -> bool:

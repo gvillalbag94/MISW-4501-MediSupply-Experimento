@@ -80,23 +80,18 @@ class AccessValidator:
         return any(route.startswith(prefix) for prefix in public_prefixes)
     
     def _is_internal_request(self, request) -> bool:
-        """Verifica si la petición viene del Gateway interno."""
-        # Verificar headers internos del Gateway
+        """
+        Verifica si la petición viene del Gateway interno.
+        IMPORTANTE: Solo permitir bypass de auth para peticiones explícitamente marcadas como internas.
+        NO permitir bypass solo por IP para evitar vulnerabilidades de seguridad.
+        """
+        # Verificar headers internos del Gateway (debe ser explícito)
         internal_header = request.headers.get('X-Internal-Request')
         gateway_token = request.headers.get('X-Gateway-Token')
         
-        # Verificar si viene de la red interna (Docker)
-        remote_addr = request.environ.get('REMOTE_ADDR', '')
-        is_internal_network = (
-            remote_addr.startswith('172.') or  # Docker network
-            remote_addr.startswith('192.168.') or  # Local network
-            remote_addr == '127.0.0.1' or  # Localhost
-            remote_addr.startswith('10.')  # Private network
-        )
-        
-        return (internal_header == 'true' or 
-                gateway_token is not None or 
-                is_internal_network)
+        # Solo permitir bypass si hay headers específicos de gateway interno
+        # NO permitir bypass solo por IP de red interna (vulnerabilidad de seguridad)
+        return (internal_header == 'true' and gateway_token is not None)
     
     def _get_required_permission(self, route: str, method: str) -> Tuple[ResourceType, ActionType]:
         """

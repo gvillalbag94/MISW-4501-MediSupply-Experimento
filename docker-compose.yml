@@ -9,7 +9,7 @@ services:
       - HOST=0.0.0.0
       - PORT=5001
       - LOG_LEVEL=INFO
-      - JWT_SECRET=your-secret-key-here
+      - JWT_SECRET=your-secret-key-here-with-32-plus-chars-for-security
       - ALGORITHM=HS256
       - PRODUCTOS_SERVICE_URL=http://productos:5002
       - PROVEDORES_SERVICE_URL=http://provedores:5003
@@ -27,7 +27,7 @@ services:
       - HOST=0.0.0.0
       - PORT=5002
       - LOG_LEVEL=INFO
-      - JWT_SECRET=your-secret-key-here
+      - JWT_SECRET=your-secret-key-here-with-32-plus-chars-for-security
       - ALGORITHM=HS256
     networks:
       - internal_net
@@ -42,7 +42,7 @@ services:
       - HOST=0.0.0.0
       - PORT=5003
       - LOG_LEVEL=INFO
-      - JWT_SECRET=your-secret-key-here
+      - JWT_SECRET=your-secret-key-here-with-32-plus-chars-for-security
       - ALGORITHM=HS256
     networks:
       - internal_net

@@ -57,7 +57,7 @@ class Config:
         self.app.config["LOG_LEVEL"] = os.getenv("LOG_LEVEL", "INFO")
         
         # Configuración JWT para autorización
-        self.app.config["JWT_SECRET"] = os.getenv("JWT_SECRET", "your-secret-key-here")
+        self.app.config["JWT_SECRET"] = os.getenv("JWT_SECRET", "your-secret-key-here-with-32-plus-chars-for-security")
         self.app.config["ALGORITHM"] = os.getenv("ALGORITHM", "HS256")
     
     def _configure_request_logging(self):
