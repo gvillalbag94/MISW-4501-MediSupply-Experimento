@@ -72,8 +72,8 @@ class Config:
         self.app.config['LOG_LEVEL'] = os.getenv('LOG_LEVEL', 'INFO')
         self.app.config['JWT_SECRET'] = os.getenv('JWT_SECRET', 'default-secret-key')
         self.app.config['ALGORITHM'] = os.getenv('ALGORITHM', 'HS256')
-        self.app.config['PRODUCTOS_SERVICE_URL'] = os.getenv('PRODUCTOS_SERVICE_URL', 'http://127.0.0.1:5001')
-        self.app.config['PROVEDORES_SERVICE_URL'] = os.getenv('PROVEDORES_SERVICE_URL', 'http://127.0.0.1:5003')
+        self.app.config['PRODUCTOS_SERVICE_URL'] = os.getenv('PRODUCTOS_SERVICE_URL', 'http://127.0.0.1:6001')
+        self.app.config['PROVEDORES_SERVICE_URL'] = os.getenv('PROVEDORES_SERVICE_URL', 'http://127.0.0.1:6003')
 
     def _configure_request_logging(self):
         """Configura el middleware para logging de requests y responses."""

@@ -62,9 +62,9 @@ pipenv run python src/main.py
 ### Docker
 ```bash
 docker build -t provedores .
-docker run -p 5003:5003 provedores
+docker run -p 6003:6003 provedores
 ```
 
 ## Puerto
 
-El microservicio se ejecuta en el puerto **5003** por defecto.
+El microservicio se ejecuta en el puerto **6003** por defecto.

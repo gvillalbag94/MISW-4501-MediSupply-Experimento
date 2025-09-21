@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Test script for Provedores microservice
-BASE_URL="http://localhost:5003"
+BASE_URL="http://localhost:6003"
 
 echo "Testing Provedores Microservice"
 echo "================================"

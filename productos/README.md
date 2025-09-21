@@ -97,11 +97,11 @@ pipenv install
 pipenv run python src/main.py
 ```
 
-El servicio estará disponible en `http://localhost:5001`
+El servicio estará disponible en `http://localhost:6001`
 
 ### Health Check
 ```bash
-curl http://localhost:5001/health
+curl http://localhost:6001/health
 ```
 
 ## Variables de Entorno
@@ -109,7 +109,7 @@ curl http://localhost:5001/health
 - `ENV`: Entorno de ejecución (default: development)
 - `DEBUG`: Modo debug (default: true)
 - `HOST`: Host de la aplicación (default: 0.0.0.0)
-- `PORT`: Puerto de la aplicación (default: 5001)
+- `PORT`: Puerto de la aplicación (default: 6001)
 - `LOG_LEVEL`: Nivel de logging (default: INFO)
 
 ## Docker
@@ -121,7 +121,7 @@ docker build -t microservicio-productos .
 
 ### Ejecutar contenedor
 ```bash
-docker run -p 5001:5001 microservicio-productos
+docker run -p 6001:6001 microservicio-productos
 ```
 
 ## Integración con API Gateway

@@ -14,23 +14,23 @@ sleep 5
 
 echo
 echo "=== Health Check ==="
-curl -s http://localhost:5001/health | python -m json.tool
+curl -s http://localhost:6001/health | python -m json.tool
 
 echo
 echo "=== Obtener todos los productos ==="
-curl -s http://localhost:5001/productos | python -m json.tool
+curl -s http://localhost:6001/productos | python -m json.tool
 
 echo
 echo "=== Obtener producto por ID ==="
-curl -s http://localhost:5001/productos/1 | python -m json.tool
+curl -s http://localhost:6001/productos/1 | python -m json.tool
 
 echo
 echo "=== Obtener productos por categoría (electronicos) ==="
-curl -s http://localhost:5001/productos/categoria/electronicos | python -m json.tool
+curl -s http://localhost:6001/productos/categoria/electronicos | python -m json.tool
 
 echo
 echo "=== Buscar productos por nombre (iPhone) ==="
-curl -s "http://localhost:5001/productos/buscar?nombre=iPhone" | python -m json.tool
+curl -s "http://localhost:6001/productos/buscar?nombre=iPhone" | python -m json.tool
 
 echo
 echo "=== Limpiando procesos ==="

@@ -24,17 +24,17 @@ services:
   gateway:
     build: gateway
     ports:
-      - "5001:5001"
+      - "6001:6001"
     environment:
       - ENV=development
       - DEBUG=true
       - HOST=0.0.0.0
-      - PORT=5001
+      - PORT=6001
       - LOG_LEVEL=INFO
       - JWT_SECRET=your-secret-key-here
       - ALGORITHM=HS256
-      - PRODUCTOS_SERVICE_URL=http://productos:5002
-      - PROVEDORES_SERVICE_URL=http://provedores:5003
+      - PRODUCTOS_SERVICE_URL=http://productos:6002
+      - PROVEDORES_SERVICE_URL=http://provedores:6003
       - PULSAR_SERVICE_URL=pulsar://pulsar:6650
     networks:
       - app_net
@@ -46,12 +46,12 @@ services:
   productos:
     build: productos
     ports:
-      - "5002:5002"
+      - "6002:6002"
     environment:
       - ENV=development
       - DEBUG=true
       - HOST=0.0.0.0
-      - PORT=5002
+      - PORT=6002
       - LOG_LEVEL=INFO
       - PULSAR_SERVICE_URL=pulsar://pulsar:6650
     networks:
@@ -64,12 +64,12 @@ services:
   provedores:
     build: provedores
     ports:
-      - "5003:5003"
+      - "6003:6003"
     environment:
       - ENV=development
       - DEBUG=true
       - HOST=0.0.0.0
-      - PORT=5003
+      - PORT=6003
       - LOG_LEVEL=INFO
       - PULSAR_SERVICE_URL=pulsar://pulsar:6650
     networks:

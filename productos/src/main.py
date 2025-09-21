@@ -57,7 +57,7 @@ app = create_application()
 if __name__ == "__main__":
     # Configuración para desarrollo
     host = app.config.get("HOST", "0.0.0.0")
-    port = app.config.get("PORT", 5001)
+    port = app.config.get("PORT", 6001)
     debug = app.config.get("DEBUG", False)
     
     print(f"Starting Microservicio de Productos on {host}:{port}")

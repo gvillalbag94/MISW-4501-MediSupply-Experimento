@@ -4,6 +4,6 @@ COPY . /app
 RUN pip install pipenv
 RUN pipenv install
 ENV FLASK_APP=./src/main.py
-EXPOSE 5001
-CMD ["pipenv", "run", "flask", "run", "-h", "0.0.0.0", "-p",  "5001"]
+EXPOSE 6001
+CMD ["pipenv", "run", "flask", "run", "-h", "0.0.0.0", "-p",  "6001"]
 

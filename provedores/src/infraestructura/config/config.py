@@ -55,7 +55,7 @@ class Config:
         self.app.config["ENV"] = os.getenv("ENV", "development")
         self.app.config["DEBUG"] = os.getenv("DEBUG", "False").lower() == "true"
         self.app.config["HOST"] = os.getenv("HOST", "0.0.0.0")
-        self.app.config["PORT"] = int(os.getenv("PORT", 5003))
+        self.app.config["PORT"] = int(os.getenv("PORT", 6003))
         self.app.config["LOG_LEVEL"] = os.getenv("LOG_LEVEL", "INFO")
     
     def _configure_request_logging(self):

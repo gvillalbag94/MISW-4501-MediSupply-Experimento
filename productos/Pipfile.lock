@@ -75,7 +75,7 @@
                 "sha256:6aab0f181c486f973bc7262a97f5aca3ee7e1437011ef0c2ec04b5a11d16c927",
                 "sha256:6cf8fd4c04756b6b60146d98cd8a77d0cdae0e1ca20329da2ac85eed779b6849",
                 "sha256:6fb70de56f1859a3f71261cbe41005f56a7842cc348d3aeb26237560bfa5e0ce",
-                "sha256:6fce4b8500244f6fcb71465d4a4930d132ba9ab8e71a7859e6a5d59851068d14",
+                "sha256:6fce4b8600244f6fcb71465d4a4930d132ba9ab8e71a7859e6a5d59851068d14",
                 "sha256:70bfc5f2c318afece2f5838ea5e4c3febada0be750fcf4775641052bbba14d05",
                 "sha256:73dc19b562516fc9bcf6e5d6e596df0b4eb98d87e4f79f3ae71840e6ed21361c",
                 "sha256:74d77e25adda8581ffc1c720f1c81ca082921329452eba58b16233ab1842141c",
@@ -128,7 +128,7 @@
         "flask": {
             "hashes": [
                 "sha256:bf656c15c80190ed628ad08cdfd3aaa35beb087855e2f494910aa3774cc4fd87",
-                "sha256:ca1d8112ec8a6158cc29ea4858963350011b5c846a414cdb7a954aa9e967d03c"
+                "sha256:ca1d8112ec8a6158cc29ea4858963360011b5c846a414cdb7a954aa9e967d03c"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",

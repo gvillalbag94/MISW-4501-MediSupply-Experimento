@@ -5,5 +5,5 @@ RUN pip install pipenv
 RUN pipenv install
 ENV FLASK_APP=./src/main.py
 ENV PYTHONPATH=/app
-EXPOSE 5003
+EXPOSE 6003
 CMD ["pipenv", "run", "python", "src/main.py"]

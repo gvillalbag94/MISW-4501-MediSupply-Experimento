@@ -7,8 +7,8 @@ Este proyecto implementa un sistema de microservicios con un API Gateway que act
 El sistema está compuesto por:
 
 1. **API Gateway** (Puerto 5000): Punto de entrada único que enruta las peticiones a los microservicios
-2. **Microservicio de Autenticación** (Puerto 5002): Maneja la autenticación de usuarios
-3. **Microservicio de Productos** (Puerto 5001): Gestiona el catálogo de productos
+2. **Microservicio de Autenticación** (Puerto 6002): Maneja la autenticación de usuarios
+3. **Microservicio de Productos** (Puerto 6001): Gestiona el catálogo de productos
 
 ## Servicios Disponibles
 
@@ -21,8 +21,8 @@ El sistema está compuesto por:
   - Health check del sistema
 
 ### Microservicio de Productos
-- **URL**: http://localhost:5001
-- **Health Check**: http://localhost:5001/health
+- **URL**: http://localhost:6001
+- **Health Check**: http://localhost:6001/health
 - **Endpoints**:
   - `GET /productos` - Lista todos los productos
   - `GET /productos/{id}` - Obtiene un producto por ID
@@ -30,7 +30,7 @@ El sistema está compuesto por:
   - `GET /productos/buscar?nombre={nombre}` - Busca por nombre
 
 ### Microservicio de Autenticación
-- **URL**: http://localhost:5002
+- **URL**: http://localhost:6002
 - **Funcionalidades**:
   - Login de usuarios
   - Generación de tokens JWT
@@ -86,10 +86,10 @@ cd gateway
 - `GET http://localhost:5000/productos/buscar?nombre=iPhone`
 
 ### Directamente al Microservicio
-- `GET http://localhost:5001/productos`
-- `GET http://localhost:5001/productos/1`
-- `GET http://localhost:5001/productos/categoria/electronicos`
-- `GET http://localhost:5001/productos/buscar?nombre=iPhone`
+- `GET http://localhost:6001/productos`
+- `GET http://localhost:6001/productos/1`
+- `GET http://localhost:6001/productos/categoria/electronicos`
+- `GET http://localhost:6001/productos/buscar?nombre=iPhone`
 
 ## Categorías de Productos Disponibles
 
@@ -135,7 +135,7 @@ El microservicio de productos sigue los principios de arquitectura hexagonal (Cl
 - `ALGORITHM`: Algoritmo de encriptación
 
 ### Productos
-- `PORT`: Puerto del microservicio (default: 5001)
+- `PORT`: Puerto del microservicio (default: 6001)
 - `DEBUG`: Modo debug (default: true)
 - `LOG_LEVEL`: Nivel de logging (default: INFO)
 

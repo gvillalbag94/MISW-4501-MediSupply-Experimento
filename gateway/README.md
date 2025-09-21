@@ -65,9 +65,9 @@ FLASK_DEBUG=True
 HOST=0.0.0.0
 
 # URLs de los servicios
-AUTENTICADOR_URL=http://localhost:5001
-AUTORIZADOR_URL=http://localhost:5002
-PRODUCTOS_URL=http://localhost:5003
+AUTENTICADOR_URL=http://localhost:6001
+AUTORIZADOR_URL=http://localhost:6002
+PRODUCTOS_URL=http://localhost:6003
 PROVEDORES_URL=http://localhost:5004
 
 # Configuración de logging
