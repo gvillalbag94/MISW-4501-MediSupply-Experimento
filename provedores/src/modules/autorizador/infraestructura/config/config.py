@@ -59,7 +59,7 @@ class Config:
         self.app.config['HOST'] = os.getenv('HOST', '0.0.0.0')
         self.app.config['PORT'] = int(os.getenv('PORT', 5000))
         self.app.config['LOG_LEVEL'] = os.getenv('LOG_LEVEL', 'INFO')
-        self.app.config['JWT_SECRET'] = os.getenv('JWT_SECRET', 'default-secret-key')
+        self.app.config['JWT_SECRET'] = os.getenv('JWT_SECRET', 'your-secret-key-here-with-32-plus-chars-for-security')
         self.app.config['ALGORITHM'] = os.getenv('ALGORITHM', 'HS256')
 
     def _configure_request_logging(self):

@@ -63,7 +63,7 @@ class Config:
         self.app.config['HOST'] = os.getenv('HOST', '0.0.0.0')
         self.app.config['PORT'] = int(os.getenv('PORT', 5000))
         self.app.config['LOG_LEVEL'] = os.getenv('LOG_LEVEL', 'INFO')
-        self.app.config['JWT_SECRET'] = os.getenv('JWT_SECRET', 'default-secret-key')
+        self.app.config['JWT_SECRET'] = os.getenv('JWT_SECRET', 'your-secret-key-here-with-32-plus-chars-for-security')
         self.app.config['ALGORITHM'] = os.getenv('ALGORITHM', 'HS256')
         self.app.config['PRODUCTOS_SERVICE_URL'] = os.getenv('PRODUCTOS_SERVICE_URL', 'http://127.0.0.1:5001')
         self.app.config['PROVEDORES_SERVICE_URL'] = os.getenv('PROVEDORES_SERVICE_URL', 'http://127.0.0.1:5003')
